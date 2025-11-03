@@ -26,23 +26,111 @@
 					"name": "source3"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_Sink_Dim_Cliente",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "derivedColumn4"
+				},
+				{
+					"name": "select1"
 				}
 			],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          cst_id as short,",
+				"          cst_key as string,",
+				"          cst_firstname as string,",
+				"          cst_lastname as string,",
+				"          cst_marital_status as string,",
+				"          cst_gndr as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          CID as string,",
+				"          BDATE as date,",
+				"          GEN as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source2",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          CID as string,",
+				"          CNTRY as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source3",
-				"source2 derive() ~> derivedColumn1"
+				"source1 derive(ClienteKey_Limpia = toString(trim(cst_key))) ~> derivedColumn1",
+				"source2 derive(ClienteKey_Limpia_2 = toString(replace(trim(CID), 'NASAW000', 'AW000'))) ~> derivedColumn2",
+				"source3 derive(ClienteKey_Limpia_3 = toString(replace(trim(CID), '-', ''))) ~> derivedColumn3",
+				"derivedColumn1, derivedColumn2 join(cst_key == ClienteKey_Limpia_2,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, derivedColumn3 join(cst_key == ClienteKey_Limpia_3,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 derive(Genero_Key = iif(cst_gndr == 'M', 1, iif(cst_gndr == 'F', 0, toInteger(null())))) ~> derivedColumn4",
+				"derivedColumn4 select(mapColumn(",
+				"          cst_id,",
+				"          PrimerNombre = cst_firstname,",
+				"          Apellido = cst_lastname,",
+				"          EstadoCivil = cst_marital_status,",
+				"          cst_key = ClienteKey_Limpia,",
+				"          ClienteFechaNacimiento = BDATE,",
+				"          Pais = CNTRY,",
+				"          Genero = Genero_Key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ClienteKey as integer,",
+				"          cst_key as string,",
+				"          PrimerNombre as string,",
+				"          Apellido as string,",
+				"          EstadoCivil as string,",
+				"          Genero as string,",
+				"          FechaNacimiento as date,",
+				"          Pais as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}
