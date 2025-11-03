@@ -1,0 +1,55 @@
+{
+	"name": "DS_Sink_Dim_Fecha",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQL_DWVentas",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "FechaKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "FechaCompleta",
+				"type": "date"
+			},
+			{
+				"name": "Anio",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Mes",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Dia",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Trimestre",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "DiaDeLaSemana",
+				"type": "nvarchar"
+			},
+			{
+				"name": "EsFinDeSemana",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "Dim_Fecha"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

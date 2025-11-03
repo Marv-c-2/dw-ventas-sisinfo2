@@ -1,0 +1,51 @@
+{
+	"name": "DS_Sink_Dim_Cliente",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQL_DWVentas",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ClienteKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cst_key",
+				"type": "nvarchar"
+			},
+			{
+				"name": "PrimerNombre",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Apellido",
+				"type": "nvarchar"
+			},
+			{
+				"name": "EstadoCivil",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Genero",
+				"type": "nvarchar"
+			},
+			{
+				"name": "FechaNacimiento",
+				"type": "date"
+			},
+			{
+				"name": "Pais",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "Dim_Cliente"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

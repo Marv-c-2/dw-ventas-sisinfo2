@@ -1,0 +1,64 @@
+{
+	"name": "DS_Sink_Fact_Ventas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQL_DWVentas",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "VentaKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "OrdenID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "FechaOrdenKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "FechaEnvioKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ClienteKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ProductoKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CantidadVendida",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MontoVenta",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "PrecioUnitario",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "Fact_Ventas"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

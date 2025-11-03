@@ -1,0 +1,24 @@
+{
+	"name": "DS_Source_DetalleVentas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS_Ventas",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Detalle_ventas.csv",
+				"container": "bronze-advent"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,53 @@
+{
+	"name": "DS_Sink_Dim_Producto",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQL_DWVentas",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ProductoKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "prd_key",
+				"type": "nvarchar"
+			},
+			{
+				"name": "NombreProducto",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Costo",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "LineaProducto",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Categoria",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Subcategoria",
+				"type": "nvarchar"
+			},
+			{
+				"name": "RequiereMantenimiento",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "Dim_Producto"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
