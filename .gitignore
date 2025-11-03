@@ -1,0 +1,11 @@
+# Archivos de configuración sensible y estado de Terraform
+*.tfplan
+*.tfstate
+*.tfstate.backup
+.terraform/
+terraform.tfvars
+crash.log
+override.tf
+override.tf.json
+*override.tf
+*override.tf.json

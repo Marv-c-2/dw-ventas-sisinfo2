@@ -23,7 +23,7 @@ provider "azurerm" {
 # Genera un número aleatorio para evitar conflictos en los nombres de recursos
 resource "random_integer" "suffix" {
   min = 10000
-  max = 99999
+  max = 99999 
 }
 
 # -----------------------------------------------------------------------------
