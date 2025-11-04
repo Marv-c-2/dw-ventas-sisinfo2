@@ -1,0 +1,168 @@
+{
+	"name": "DF_Carga_Fact_Ventas",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_Source_DetalleVentas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_Sink_Dim_Cliente",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_Sink_Dim_Producto",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_Sink_Dim_Fecha",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_Sink_Fact_Ventas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "lookup2"
+				},
+				{
+					"name": "lookup3"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          sls_ord_num as string,",
+				"          sls_prd_key as string,",
+				"          sls_cust_id as string,",
+				"          sls_order_dt as string,",
+				"          sls_ship_dt as string,",
+				"          sls_sales as string,",
+				"          sls_quantity as string,",
+				"          sls_price as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source(output(",
+				"          ClienteKey as integer,",
+				"          cst_key as string,",
+				"          PrimerNombre as string,",
+				"          Apellido as string,",
+				"          EstadoCivil as string,",
+				"          Genero as string,",
+				"          FechaNacimiento as date,",
+				"          Pais as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source2",
+				"source(output(",
+				"          ProductoKey as integer,",
+				"          prd_key as string,",
+				"          NombreProducto as string,",
+				"          Costo as decimal(10,2),",
+				"          LineaProducto as string,",
+				"          Categoria as string,",
+				"          Subcategoria as string,",
+				"          RequiereMantenimiento as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source3",
+				"source(output(",
+				"          FechaKey as integer,",
+				"          FechaCompleta as date,",
+				"          Anio as integer,",
+				"          Mes as integer,",
+				"          Dia as integer,",
+				"          Trimestre as integer,",
+				"          DiaDeLaSemana as string,",
+				"          EsFinDeSemana as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source4",
+				"source1 derive(ClienteKey_Fact = toInteger(trim(sls_cust_id))) ~> derivedColumn1",
+				"derivedColumn1, source2 lookup(ClienteKey_Fact == ClienteKey,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1, source3 lookup(toInteger(sls_prd_key) == ProductoKey,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"lookup2, source4 lookup(toInteger(sls_order_dt) == FechaKey",
+				"     && toInteger(sls_ship_dt) == FechaKey,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup3",
+				"lookup3 select(mapColumn(",
+				"          sls_ord_num,",
+				"          sls_sales,",
+				"          sls_quantity,",
+				"          sls_price,",
+				"          ClienteKey,",
+				"          ProductoKey,",
+				"          Costo,",
+				"          FechaKey",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          VentaKey as integer,",
+				"          OrdenID as string,",
+				"          FechaOrdenKey as integer,",
+				"          FechaEnvioKey as integer,",
+				"          ClienteKey as integer,",
+				"          ProductoKey as integer,",
+				"          CantidadVendida as integer,",
+				"          MontoVenta as decimal(18,2),",
+				"          PrecioUnitario as decimal(18,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
