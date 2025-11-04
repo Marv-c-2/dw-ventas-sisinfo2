@@ -12,7 +12,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DS_Sink_Dim_Fecha",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "orden"
@@ -28,6 +36,9 @@
 				},
 				{
 					"name": "aggregate1"
+				},
+				{
+					"name": "select1"
 				}
 			],
 			"scriptLines": [
@@ -47,9 +58,35 @@
 				"source1 derive(Fecha_Base = trim(sls_order_dt)) ~> orden",
 				"source1 derive(Fecha_Base = trim(sls_ship_dt)) ~> envio",
 				"orden, envio union(byName: false)~> union1",
-				"aggregate1 derive(Crear_FechaKey = toInteger(replace(replace(aggregate1@Fecha_Base, '-', ''), '/', ''))) ~> derivedColumn1",
+				"aggregate1 derive(Crear_FechaKey = toInteger(trim(Fecha_Base))) ~> derivedColumn1",
 				"union1 aggregate(groupBy(Fecha_Base),",
-				"     Conteo_Temporal = count(1)) ~> aggregate1"
+				"     Conteo_Temporal = count(1)) ~> aggregate1",
+				"derivedColumn1 select(mapColumn(",
+				"          {FechaCompleta     } = Fecha_Base,",
+				"          FechaKey = Crear_FechaKey",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          FechaKey as integer,",
+				"          FechaCompleta as date,",
+				"          Anio as integer,",
+				"          Mes as integer,",
+				"          Dia as integer,",
+				"          Trimestre as integer,",
+				"          DiaDeLaSemana as string,",
+				"          EsFinDeSemana as boolean",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}

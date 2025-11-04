@@ -1,5 +1,5 @@
 {
-	"name": "Carga de Dim_Producto",
+	"name": "DF_Carga_Dim_Producto",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
