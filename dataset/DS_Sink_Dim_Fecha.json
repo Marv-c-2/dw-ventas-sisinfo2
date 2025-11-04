@@ -7,45 +7,7 @@
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
-		"schema": [
-			{
-				"name": "FechaKey",
-				"type": "int",
-				"precision": 10
-			},
-			{
-				"name": "FechaCompleta",
-				"type": "date"
-			},
-			{
-				"name": "Anio",
-				"type": "int",
-				"precision": 10
-			},
-			{
-				"name": "Mes",
-				"type": "int",
-				"precision": 10
-			},
-			{
-				"name": "Dia",
-				"type": "int",
-				"precision": 10
-			},
-			{
-				"name": "Trimestre",
-				"type": "int",
-				"precision": 10
-			},
-			{
-				"name": "DiaDeLaSemana",
-				"type": "nvarchar"
-			},
-			{
-				"name": "EsFinDeSemana",
-				"type": "bit"
-			}
-		],
+		"schema": [],
 		"typeProperties": {
 			"schema": "gold",
 			"table": "Dim_Fecha"
