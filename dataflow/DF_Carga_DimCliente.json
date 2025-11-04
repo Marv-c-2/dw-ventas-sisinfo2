@@ -56,6 +56,9 @@
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "derivedColumn5"
 				}
 			],
 			"scriptLines": [
@@ -98,9 +101,8 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join2",
-				"join2 derive(Genero_Key = iif(cst_gndr == 'M', 1, iif(cst_gndr == 'F', 0, toInteger(null()))),",
-				"          ClienteKey_Final = toInteger(substring(ClienteKey_Limpia, 6, 100))) ~> derivedColumn4",
-				"derivedColumn4 select(mapColumn(",
+				"join2 derive(Genero_Key = iif(cst_gndr == 'M', 1, iif(cst_gndr == 'F', 0, toInteger(null())))) ~> derivedColumn4",
+				"derivedColumn5 select(mapColumn(",
 				"          cst_id,",
 				"          PrimerNombre = cst_firstname,",
 				"          Apellido = cst_lastname,",
@@ -109,10 +111,11 @@
 				"          ClienteFechaNacimiento = BDATE,",
 				"          Pais = CNTRY,",
 				"          Genero = Genero_Key,",
-				"          ClienteKey = ClienteKey_Final",
+				"          ClienteKey = ClienteKey_Limpia_2",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
+				"derivedColumn4 derive(ClienteKey_Final = toInteger(substring(ClienteKey_Limpia, 6, 100))) ~> derivedColumn5",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
