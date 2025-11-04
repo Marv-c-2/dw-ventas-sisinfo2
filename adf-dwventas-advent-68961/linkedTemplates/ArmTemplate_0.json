@@ -1,0 +1,1193 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "adf-dwventas-advent-68961"
+		},
+		"LS_ADLS_Ventas_connectionString": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"connectionString\"de \"LS_ADLS_Ventas\""
+		},
+		"LS_SQL_DWVentas_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"LS_SQL_DWVentas\""
+		},
+		"LS_SQL_DWVentas_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "sql-dwventas-advent-68961.database.windows.net"
+		},
+		"LS_SQL_DWVentas_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "dw_ventas_advent"
+		},
+		"LS_SQL_DWVentas_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "adminmarvin"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_ADLS_Ventas')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('LS_ADLS_Ventas_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_SQL_DWVentas')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('LS_SQL_DWVentas_properties_typeProperties_server')]",
+					"database": "[parameters('LS_SQL_DWVentas_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_SQL_DWVentas_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_SQL_DWVentas_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Sink_Dim_Cliente')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_DWVentas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ClienteKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "cst_key",
+						"type": "nvarchar"
+					},
+					{
+						"name": "PrimerNombre",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Apellido",
+						"type": "nvarchar"
+					},
+					{
+						"name": "EstadoCivil",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Genero",
+						"type": "nvarchar"
+					},
+					{
+						"name": "FechaNacimiento",
+						"type": "date"
+					},
+					{
+						"name": "Pais",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "Dim_Cliente"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SQL_DWVentas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Sink_Dim_Fecha')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_DWVentas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "FechaKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "FechaCompleta",
+						"type": "date"
+					},
+					{
+						"name": "Anio",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Mes",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Dia",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Trimestre",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "DiaDeLaSemana",
+						"type": "nvarchar"
+					},
+					{
+						"name": "EsFinDeSemana",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "Dim_Fecha"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SQL_DWVentas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Sink_Dim_Producto')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_DWVentas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductoKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "prd_key",
+						"type": "nvarchar"
+					},
+					{
+						"name": "NombreProducto",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Costo",
+						"type": "decimal",
+						"precision": 10,
+						"scale": 2
+					},
+					{
+						"name": "LineaProducto",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Categoria",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Subcategoria",
+						"type": "nvarchar"
+					},
+					{
+						"name": "RequiereMantenimiento",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "Dim_Producto"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SQL_DWVentas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Sink_Fact_Ventas')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_DWVentas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "VentaKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "OrdenID",
+						"type": "nvarchar"
+					},
+					{
+						"name": "FechaOrdenKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "FechaEnvioKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ClienteKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductoKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CantidadVendida",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "MontoVenta",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					},
+					{
+						"name": "PrecioUnitario",
+						"type": "decimal",
+						"precision": 18,
+						"scale": 2
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "Fact_Ventas"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SQL_DWVentas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Source_Clientes')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_Ventas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Clientes.csv",
+						"container": "bronze-advent"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_Ventas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Source_Clientes_BD_GEN')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_Ventas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Clientes_BD-GEN (1).csv",
+						"container": "bronze-advent"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_Ventas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Source_Clientes_Location')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_Ventas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Clientes_location (1).csv",
+						"container": "bronze-advent"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_Ventas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Source_DetalleVentas')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_Ventas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Detalle_ventas.csv",
+						"container": "bronze-advent"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "sls_ord_num",
+						"type": "String"
+					},
+					{
+						"name": "sls_prd_key",
+						"type": "String"
+					},
+					{
+						"name": "sls_cust_id",
+						"type": "String"
+					},
+					{
+						"name": "sls_order_dt",
+						"type": "String"
+					},
+					{
+						"name": "sls_ship_dt",
+						"type": "String"
+					},
+					{
+						"name": "sls_sales",
+						"type": "String"
+					},
+					{
+						"name": "sls_quantity",
+						"type": "String"
+					},
+					{
+						"name": "sls_price",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_Ventas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Source_Productos')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_Ventas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Productos.csv",
+						"container": "bronze-advent"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_Ventas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_Source_Productos_CAT_MANT')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS_Ventas",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Productos_CAT_MANT.csv",
+						"container": "bronze-advent"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS_Ventas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Carga_DimCliente')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_Source_Clientes",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_Source_Clientes_BD_GEN",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_Source_Clientes_Location",
+								"type": "DatasetReference"
+							},
+							"name": "source3"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_Sink_Dim_Cliente",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "derivedColumn3"
+						},
+						{
+							"name": "join1"
+						},
+						{
+							"name": "join2"
+						},
+						{
+							"name": "derivedColumn4"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "derivedColumn5"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          cst_id as short,",
+						"          cst_key as string,",
+						"          cst_firstname as string,",
+						"          cst_lastname as string,",
+						"          cst_marital_status as string,",
+						"          cst_gndr as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source(output(",
+						"          CID as string,",
+						"          BDATE as date,",
+						"          GEN as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source2",
+						"source(output(",
+						"          CID as string,",
+						"          CNTRY as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source3",
+						"source1 derive(ClienteKey_Limpia = toString(trim(cst_key))) ~> derivedColumn1",
+						"source2 derive(ClienteKey_Limpia_2 = toString(replace(trim(CID), 'NASAW000', 'AW000'))) ~> derivedColumn2",
+						"source3 derive(ClienteKey_Limpia_3 = toString(replace(trim(CID), '-', ''))) ~> derivedColumn3",
+						"derivedColumn1, derivedColumn2 join(cst_key == ClienteKey_Limpia_2,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join1",
+						"join1, derivedColumn3 join(cst_key == ClienteKey_Limpia_3,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join2",
+						"join2 derive(Genero_Key = iif(cst_gndr == 'M', 1, iif(cst_gndr == 'F', 0, toInteger(null())))) ~> derivedColumn4",
+						"derivedColumn5 select(mapColumn(",
+						"          cst_id,",
+						"          PrimerNombre = cst_firstname,",
+						"          Apellido = cst_lastname,",
+						"          EstadoCivil = cst_marital_status,",
+						"          cst_key = ClienteKey_Limpia,",
+						"          ClienteFechaNacimiento = BDATE,",
+						"          Pais = CNTRY,",
+						"          Genero = Genero_Key,",
+						"          ClienteKey = ClienteKey_Limpia_2",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"derivedColumn4 derive(ClienteKey_Final = toInteger(substring(ClienteKey_Limpia, 6, 100))) ~> derivedColumn5",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ClienteKey as integer,",
+						"          cst_key as string,",
+						"          PrimerNombre as string,",
+						"          Apellido as string,",
+						"          EstadoCivil as string,",
+						"          Genero as string,",
+						"          FechaNacimiento as date,",
+						"          Pais as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_Source_Clientes')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Source_Clientes_BD_GEN')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Source_Clientes_Location')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Sink_Dim_Cliente')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Carga_Dim_Fecha')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_Source_DetalleVentas",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_Sink_Dim_Fecha",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "orden"
+						},
+						{
+							"name": "envio"
+						},
+						{
+							"name": "union1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          sls_ord_num as string,",
+						"          sls_prd_key as string,",
+						"          sls_cust_id as string,",
+						"          sls_order_dt as string,",
+						"          sls_ship_dt as string,",
+						"          sls_sales as string,",
+						"          sls_quantity as string,",
+						"          sls_price as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 derive(Fecha_Base = trim(sls_order_dt)) ~> orden",
+						"source1 derive(Fecha_Base = trim(sls_ship_dt)) ~> envio",
+						"orden, envio union(byName: false)~> union1",
+						"aggregate1 derive(Crear_FechaKey = toInteger(trim(Fecha_Base)),",
+						"          Crear_FechaObjeto = toDate(Fecha_Base, 'yyyyMMdd')) ~> derivedColumn1",
+						"union1 aggregate(groupBy(Fecha_Base),",
+						"     Conteo_Temporal = count(1)) ~> aggregate1",
+						"derivedColumn1 select(mapColumn(",
+						"          FechaKey = Crear_FechaKey,",
+						"          FechaCompleta = Crear_FechaObjeto",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          FechaKey as integer,",
+						"          FechaCompleta as date,",
+						"          Anio as integer,",
+						"          Mes as integer,",
+						"          Dia as integer,",
+						"          Trimestre as integer,",
+						"          DiaDeLaSemana as string,",
+						"          EsFinDeSemana as boolean",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_Source_DetalleVentas')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Sink_Dim_Fecha')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Carga_Dim_Producto')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_Source_Productos",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_Source_Productos_CAT_MANT",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_Sink_Dim_Producto",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "join1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          prd_id as short,",
+						"          prd_key as string,",
+						"          prd_nm as string,",
+						"          prd_cost as short,",
+						"          prd_line as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source(output(",
+						"          ID as string,",
+						"          CAT as string,",
+						"          SUBCAT as string,",
+						"          MAINTENANCE as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source2",
+						"source1, source2 join(prd_key == ID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join1",
+						"join1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ProductoKey as integer,",
+						"          prd_key as string,",
+						"          NombreProducto as string,",
+						"          Costo as decimal(10,2),",
+						"          LineaProducto as string,",
+						"          Categoria as string,",
+						"          Subcategoria as string,",
+						"          RequiereMantenimiento as boolean",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_Source_Productos')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Source_Productos_CAT_MANT')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Sink_Dim_Producto')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_Carga_Fact_Ventas')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DS_Source_DetalleVentas",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_Sink_Dim_Cliente",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_Sink_Dim_Producto",
+								"type": "DatasetReference"
+							},
+							"name": "source3"
+						},
+						{
+							"dataset": {
+								"referenceName": "DS_Sink_Dim_Fecha",
+								"type": "DatasetReference"
+							},
+							"name": "source4"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DS_Sink_Fact_Ventas",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "lookup2"
+						},
+						{
+							"name": "lookup3"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          sls_ord_num as string,",
+						"          sls_prd_key as string,",
+						"          sls_cust_id as string,",
+						"          sls_order_dt as string,",
+						"          sls_ship_dt as string,",
+						"          sls_sales as string,",
+						"          sls_quantity as string,",
+						"          sls_price as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source(output(",
+						"          ClienteKey as integer,",
+						"          cst_key as string,",
+						"          PrimerNombre as string,",
+						"          Apellido as string,",
+						"          EstadoCivil as string,",
+						"          Genero as string,",
+						"          FechaNacimiento as date,",
+						"          Pais as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source2",
+						"source(output(",
+						"          ProductoKey as integer,",
+						"          prd_key as string,",
+						"          NombreProducto as string,",
+						"          Costo as decimal(10,2),",
+						"          LineaProducto as string,",
+						"          Categoria as string,",
+						"          Subcategoria as string,",
+						"          RequiereMantenimiento as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source3",
+						"source(output(",
+						"          FechaKey as integer,",
+						"          FechaCompleta as date,",
+						"          Anio as integer,",
+						"          Mes as integer,",
+						"          Dia as integer,",
+						"          Trimestre as integer,",
+						"          DiaDeLaSemana as string,",
+						"          EsFinDeSemana as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source4",
+						"source1 derive(ClienteKey_Fact = toInteger(trim(sls_cust_id))) ~> derivedColumn1",
+						"derivedColumn1, source2 lookup(ClienteKey_Fact == ClienteKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1, source3 lookup(toInteger(sls_prd_key) == ProductoKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup2",
+						"lookup2, source4 lookup(toInteger(sls_order_dt) == FechaKey",
+						"     && toInteger(sls_ship_dt) == FechaKey,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup3",
+						"lookup3 select(mapColumn(",
+						"          sls_ord_num,",
+						"          sls_sales,",
+						"          sls_quantity,",
+						"          sls_price,",
+						"          ClienteKey,",
+						"          ProductoKey,",
+						"          Costo,",
+						"          FechaKey",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          VentaKey as integer,",
+						"          OrdenID as string,",
+						"          FechaOrdenKey as integer,",
+						"          FechaEnvioKey as integer,",
+						"          ClienteKey as integer,",
+						"          ProductoKey as integer,",
+						"          CantidadVendida as integer,",
+						"          MontoVenta as decimal(18,2),",
+						"          PrecioUnitario as decimal(18,2)",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_Source_DetalleVentas')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Sink_Dim_Cliente')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Sink_Dim_Producto')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Sink_Dim_Fecha')]",
+				"[concat(variables('factoryId'), '/datasets/DS_Sink_Fact_Ventas')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_Carga_ModeloEstrella')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Carga_DimCliente",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"source2": {},
+									"source3": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Data flow2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Carga_Dim_Fecha",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Data flow3",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Carga_Dim_Producto",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"source2": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Data flow4",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Data flow1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Data flow2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Data flow3",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DF_Carga_Fact_Ventas",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"source2": {},
+									"source3": {},
+									"source4": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DF_Carga_DimCliente')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_Carga_Dim_Fecha')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_Carga_Dim_Producto')]",
+				"[concat(variables('factoryId'), '/dataflows/DF_Carga_Fact_Ventas')]"
+			]
+		}
+	]
+}

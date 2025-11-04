@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-dwventas-advent-68961"
+		},
+		"LS_ADLS_Ventas_connectionString": {
+			"value": ""
+		},
+		"LS_SQL_DWVentas_password": {
+			"value": ""
+		},
+		"LS_SQL_DWVentas_properties_typeProperties_server": {
+			"value": "sql-dwventas-advent-68961.database.windows.net"
+		},
+		"LS_SQL_DWVentas_properties_typeProperties_database": {
+			"value": "dw_ventas_advent"
+		},
+		"LS_SQL_DWVentas_properties_typeProperties_userName": {
+			"value": "adminmarvin"
+		}
+	}
+}
